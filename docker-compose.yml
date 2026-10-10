@@ -27,3 +27,4 @@ services:
 
 volumes:
   prism_postgres_data:
+  
