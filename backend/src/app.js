@@ -2,10 +2,12 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import { prisma } from "./lib/prisma.js";
+import { clerkAuth, requireUser } from "./middleware/authMiddleware.js";
 
 const app = express();
 
 app.use(helmet());
+app.use(clerkAuth);
 
 app.use(
   cors({
@@ -35,6 +37,15 @@ app.get("/api/health/db", async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+app.get("/api/auth/me", requireUser, (req, res) => {
+  res.status(200).json({
+    success: true,
+    user: {
+      id: req.userId,
+    },
+  });
 });
 
 // Handle unknown routes
