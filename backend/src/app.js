@@ -3,6 +3,12 @@ import cors from "cors";
 import helmet from "helmet";
 import { prisma } from "./lib/prisma.js";
 import { clerkAuth, requireUser } from "./middleware/authMiddleware.js";
+import { syncUser } from "./services/userService.js";
+
+import { createClerkClient } from "@clerk/backend";
+const clerk = createClerkClient({
+  secretKey: process.env.CLERK_SECRET_KEY,
+});
 
 const app = express();
 
@@ -39,13 +45,29 @@ app.get("/api/health/db", async (req, res, next) => {
   }
 });
 
-app.get("/api/auth/me", requireUser, (req, res) => {
-  res.status(200).json({
-    success: true,
-    user: {
-      id: req.userId,
-    },
-  });
+app.get("/api/auth/me", requireUser, async (req, res, next) => {
+  try {
+    const clerkUser = await clerk.users.getUser(req.userId);
+
+    const primaryEmail = clerkUser.emailAddresses.find(
+      (email) => email.id === clerkUser.primaryEmailAddressId
+    );
+
+    const user = await syncUser({
+      userId: req.userId,
+      email: primaryEmail?.emailAddress ?? null,
+    });
+
+    res.status(200).json({
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 // Handle unknown routes
