@@ -2,8 +2,9 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import { prisma } from "./lib/prisma.js";
-import { clerkAuth, requireUser } from "./middleware/authMiddleware.js";
+import { clerkAuth, requireUser } from "./middlewares/authMiddleware.js";
 import { syncUser } from "./services/userService.js";
+import documentRoutes from "./routes/documentRoutes.js";
 
 import { createClerkClient } from "@clerk/backend";
 const clerk = createClerkClient({
@@ -69,6 +70,8 @@ app.get("/api/auth/me", requireUser, async (req, res, next) => {
     next(error);
   }
 });
+
+app.use("/api/documents", documentRoutes);
 
 // Handle unknown routes
 app.use((req, res) => {
