@@ -4,7 +4,9 @@ import helmet from "helmet";
 import { prisma } from "./lib/prisma.js";
 import { clerkAuth, requireUser } from "./middlewares/authMiddleware.js";
 import { syncUser } from "./services/userService.js";
+
 import documentRoutes from "./routes/documentRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
 
 import { createClerkClient } from "@clerk/backend";
 const clerk = createClerkClient({
@@ -72,6 +74,7 @@ app.get("/api/auth/me", requireUser, async (req, res, next) => {
 });
 
 app.use("/api/documents", documentRoutes);
+app.use("/api/chat", chatRoutes);
 
 // Handle unknown routes
 app.use((req, res) => {
